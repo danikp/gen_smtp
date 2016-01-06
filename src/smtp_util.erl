@@ -104,13 +104,13 @@ zone(Val) when Val >= 0 ->
 %% @doc Generate a unique message ID 
 generate_message_id() ->
 	FQDN = guess_FQDN(),
-	Md5 = [io_lib:format("~2.16.0b", [X]) || <<X>> <= erlang:md5(term_to_binary([erlang:now(), FQDN]))],
+	Md5 = [io_lib:format("~2.16.0b", [X]) || <<X>> <= erlang:md5(term_to_binary([os:timestamp(), FQDN]))],
 	io_lib:format("<~s@~s>", [Md5, FQDN]).
 
 %% @doc Generate a unique MIME message boundary
 generate_message_boundary() ->
 	FQDN = guess_FQDN(),
-	["_=", [io_lib:format("~2.36.0b", [X]) || <<X>> <= erlang:md5(term_to_binary([erlang:now(), FQDN]))], "=_"].
+	["_=", [io_lib:format("~2.36.0b", [X]) || <<X>> <= erlang:md5(term_to_binary([os:timestamp(), FQDN]))], "=_"].
 
 
 -define(is_whitespace(Ch), (Ch =< 32)).
@@ -126,14 +126,6 @@ combine_rfc822_addresses([{undefined, Email}|Rest], Acc) ->
 combine_rfc822_addresses([{Name, Email}|Rest], Acc) ->
 	combine_rfc822_addresses(Rest, [32, $,, $>, Email, $<, 32, opt_quoted(Name)|Acc]).
 
-<<<<<<< HEAD
-opt_quoted(N)  ->
-	case re:run(N, "\"", [{capture, none}]) of
-		nomatch ->
-			N;
-		match ->
-			[$", re:replace(N, "\"", "\\\\\"", [global]), $"]
-=======
 opt_quoted(Name) ->
 	%% From RFC822:
 	%% specials     =  "(" / ")" / "<" / ">" / "@"  ; Must be in quoted-
@@ -148,7 +140,6 @@ opt_quoted(Name) ->
 			Name1 = re:replace(Name, <<"\\\\">>, <<"\\\\\\\\">>, [global]),
 			Name2 = re:replace(Name1, <<"\"">>, <<"\\\\\"">>, [global]),
 			[$", Name2, $"]
->>>>>>> 8df976f6e567cb860dae68fa99d0cfb0bcc23cb3
 	end.
 
 parse_rfc822_addresses(B) when is_binary(B) ->
